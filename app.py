@@ -50,6 +50,8 @@ from youtube_scanner import YouTubeScanner
 from video_generator import VideoGenerator
 from youtube_uploader import YouTubeUploader
 from main_workflow import run_workflow_once
+from shopify_scanner import ShopifyScanner
+from shopify_integrator import ShopifyIntegrator
 
 app = Flask(__name__)
 
@@ -58,6 +60,8 @@ global_state = {
     "is_running": False,
     "current_task": "Idle",
     "scanned_videos": [],
+    "shopify_scanned_products": [],
+    "shopify_imported_products": [],
     "generated_video_path": None,
     "generated_audio_path": None,
     "last_run_time": None,
@@ -213,6 +217,54 @@ def get_status():
 def get_scanned_videos():
     with state_lock:
         return jsonify(global_state["scanned_videos"])
+
+@app.route("/api/shopify/status")
+def get_shopify_status():
+    shop_name = os.environ.get("SHOPIFY_SHOP_NAME") or ""
+    access_token = os.environ.get("SHOPIFY_ACCESS_TOKEN") or ""
+    return jsonify({
+        "configured": bool(shop_name and access_token),
+        "shop_name": shop_name,
+        "has_access_token": bool(access_token)
+    })
+
+@app.route("/api/shopify/scan", methods=["POST"])
+def shopify_scan():
+    data = request.json or {}
+    query = data.get("query", "")
+    max_results = int(data.get("max_results", 10))
+
+    print(f"[*] Shopify Cockpit launched trending search scan for query: '{query}'")
+    scanner = ShopifyScanner()
+    products = scanner.scan_trending_products(query=query, max_results=max_results)
+
+    with state_lock:
+        global_state["shopify_scanned_products"] = products
+
+    return jsonify({"status": "success", "products": products})
+
+@app.route("/api/shopify/scanned-products")
+def shopify_scanned_products():
+    with state_lock:
+        return jsonify(global_state["shopify_scanned_products"])
+
+@app.route("/api/shopify/import", methods=["POST"])
+def shopify_import_product():
+    product_data = request.json
+    if not product_data:
+        return jsonify({"status": "error", "message": "No product data provided"}), 400
+
+    shop_name = os.environ.get("SHOPIFY_SHOP_NAME") or ""
+    access_token = os.environ.get("SHOPIFY_ACCESS_TOKEN") or ""
+
+    integrator = ShopifyIntegrator(shop_name=shop_name, access_token=access_token)
+    try:
+        result = integrator.import_product(product_data)
+        with state_lock:
+            global_state["shopify_imported_products"].append(result)
+        return jsonify({"status": "success", "imported_product": result})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route("/api/start", methods=["POST"])
 def start_task():
