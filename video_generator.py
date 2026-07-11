@@ -52,6 +52,9 @@ class VideoGenerator:
 
         clips = [bg_clip]
 
+        # Use an available system font family with file extension that pillow/freetype can find automatically
+        font_family = "LiberationSans-Regular"
+
         # Add text overlays at specified intervals
         for segment in text_segments:
             text = segment.get("text", "")
@@ -59,21 +62,35 @@ class VideoGenerator:
             end = segment.get("end", duration)
 
             # Create a simple clean text overlay
-            # Note: We use basic default font to avoid system font path issues
-            txt_clip = TextClip(
-                text,
-                fontsize=48,
-                color='white',
-                font='Arial',
-                size=(resolution[0] - 100, None),
-                method='caption'
-            )
-            txt_clip = txt_clip.set_start(start).set_end(end).set_position('center')
+            # Note: In MoviePy v2, first positional argument is font (or we can use keyword-only).
+            # We specify text explicitly as text=text, and font as font="LiberationSans-Regular" to be fully compatible.
+            try:
+                txt_clip = TextClip(
+                    text=text,
+                    font_size=48,
+                    color='white',
+                    font=font_family,
+                    size=(resolution[0] - 100, None),
+                    method='caption'
+                )
+                # In MoviePy v2.x, set_start/set_end are renamed to with_start/with_end/with_position/with_duration
+                txt_clip = txt_clip.with_start(start).with_end(end).with_position('center')
+            except (TypeError, AttributeError):
+                # Fallback for old MoviePy versions (v1.x)
+                txt_clip = TextClip(
+                    text,
+                    fontsize=48,
+                    color='white',
+                    font=font_family,
+                    size=(resolution[0] - 100, None),
+                    method='caption'
+                )
+                txt_clip = txt_clip.set_start(start).set_end(end).set_position('center')
             clips.append(txt_clip)
 
         # Composite everything together
         video = CompositeVideoClip(clips, size=resolution)
-        video = video.set_audio(audio_clip)
+        video = video.with_audio(audio_clip) if hasattr(video, "with_audio") else video.set_audio(audio_clip)
 
         # Write the video file
         # Using libx264 for high compatibility, and aac for audio format
