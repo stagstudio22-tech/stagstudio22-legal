@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timedelta, timezone
 from googleapiclient.discovery import build
 
 class YouTubeScanner:
@@ -12,14 +13,25 @@ class YouTubeScanner:
         if self.api_key:
             self.youtube = build("youtube", "v3", developerKey=self.api_key)
 
-    def scan_high_view_videos(self, query: str, max_results: int = 10, order: str = "viewCount", published_after: str = None):
+    def get_published_after_date(self, days: int) -> str:
+        """
+        Calculates and formats the ISO 8601 (RFC 3339) datetime string for search.
+
+        :param days: Number of days in the past (e.g. 1 for last 24h, 7 for last week).
+        :return: ISO 8601 formatted datetime string (e.g. '2023-01-01T00:00:00Z').
+        """
+        past_date = datetime.now(timezone.utc) - timedelta(days=days)
+        return past_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    def scan_high_view_videos(self, query: str, max_results: int = 10, order: str = "viewCount", published_after: str = None, within_days: int = None):
         """
         Searches YouTube for videos matching a query, then fetches detailed statistics (like view count).
 
         :param query: Search query string.
         :param max_results: Number of search results to fetch (max 50).
         :param order: Method to order search results ('viewCount', 'date', 'relevance', etc.).
-        :param published_after: ISO 8601 datetime string (e.g. '2023-01-01T00:00:00Z') to filter recent videos.
+        :param published_after: ISO 8601 datetime string (e.g. '2023-01-01T00:00:00Z').
+        :param within_days: Relative timeframe in days (e.g., 1 for last 24h, 7 for last week) - takes precedence over published_after.
         :return: List of dictionaries containing detailed video metadata.
         """
         if not self.youtube:
@@ -33,7 +45,10 @@ class YouTubeScanner:
             "order": order,
             "maxResults": min(max_results, 50)
         }
-        if published_after:
+
+        if within_days is not None:
+            search_params["publishedAfter"] = self.get_published_after_date(within_days)
+        elif published_after:
             search_params["publishedAfter"] = published_after
 
         search_response = self.youtube.search().list(**search_params).execute()
@@ -81,7 +96,8 @@ if __name__ == "__main__":
 
     try:
         scanner = YouTubeScanner()
-        videos = scanner.scan_high_view_videos(query, max_results=5)
+        # Find videos published in the last 7 days
+        videos = scanner.scan_high_view_videos(query, max_results=5, within_days=7)
         print(json.dumps(videos, indent=2))
     except Exception as e:
         print(f"Error during scan: {e}")

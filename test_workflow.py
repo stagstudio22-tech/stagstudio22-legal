@@ -71,6 +71,12 @@ class TestYouTubeScanner(unittest.TestCase):
         self.assertEqual(videos[1]["video_id"], "test_id_1")
         self.assertEqual(videos[1]["view_count"], 1500000)
 
+    def test_get_published_after_date(self):
+        scanner = YouTubeScanner(api_key="mock_key")
+        date_str = scanner.get_published_after_date(days=7)
+        self.assertTrue(date_str.endswith("Z"))
+        self.assertEqual(len(date_str), 20)
+
 class TestVideoGenerator(unittest.TestCase):
     @patch("video_generator.gTTS")
     def test_generate_speech(self, mock_gTTS):

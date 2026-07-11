@@ -1,22 +1,29 @@
 import os
+import sys
+import time
 import argparse
 import json
 from youtube_scanner import YouTubeScanner
 from video_generator import VideoGenerator
 from youtube_uploader import YouTubeUploader
 
-def run_workflow(query: str, max_scan_results: int, output_dir: str, skip_upload: bool, upload_privacy: str):
-    print("=== Starting Automated YouTube Workflow ===")
+def run_workflow_once(query: str, max_scan_results: int, output_dir: str, skip_upload: bool, upload_privacy: str, within_days: int) -> bool:
+    """
+    Executes a single cycle of: scanning, scripting, generation, and uploading.
+    Returns True if a video was successfully found/created/uploaded, False otherwise.
+    """
+    print("\n--- Cycle Start ---")
 
-    # Step 1: Scan YouTube for popular videos in this niche
-    print(f"\n[Step 1] Scanning YouTube for niche: '{query}'...")
+    # Step 1: Scan YouTube for popular videos in this niche within the date range
+    timeframe_str = f"published within the last {within_days} days" if within_days else "all-time"
+    print(f"[Step 1] Scanning YouTube for niche '{query}' ({timeframe_str})...")
     scanner = YouTubeScanner()
     try:
-        videos = scanner.scan_high_view_videos(query, max_results=max_scan_results)
-        print(f"Found {len(videos)} highly viewed videos in this niche.")
+        videos = scanner.scan_high_view_videos(query, max_results=max_scan_results, within_days=within_days)
+        print(f"Found {len(videos)} highly viewed videos.")
         if not videos:
-            print("No videos found. Exiting.")
-            return
+            print("No new popular videos found in this niche for the specified timeframe.")
+            return False
 
         # Display top 3
         for idx, video in enumerate(videos[:3]):
@@ -24,21 +31,23 @@ def run_workflow(query: str, max_scan_results: int, output_dir: str, skip_upload
     except Exception as e:
         print(f"Error scanning YouTube: {e}")
         print("Ensure you have set the YOUTUBE_API_KEY environment variable.")
-        return
+        return False
 
     # Step 2: Use metadata from the top video to generate or inspire new script content
     top_video = videos[0]
     print(f"\n[Step 2] Selecting top video as inspiration: '{top_video['title']}'")
 
-    # We will generate a video response, outline, or review based on the top video
+    # Clean up the title to avoid character encoding issues
+    ascii_title = top_video['title'].encode('ascii', 'ignore').decode('ascii')
+
     script_text = (
-        f"Today we are exploring a highly trending topic on YouTube: {top_video['title']}. "
+        f"Today we are exploring a highly trending topic on YouTube: {ascii_title}. "
         f"This subject has gained massive popularity recently, and we are breaking down why it matters. "
         f"Let us jump into the details and look at what makes this so engaging for viewers."
     )
 
     segments = [
-        {"text": f"Today we are exploring a highly trending topic on YouTube: {top_video['title'][:50]}...", "start": 0.0, "end": 4.0},
+        {"text": f"Today we are exploring a highly trending topic: {ascii_title[:50]}...", "start": 0.0, "end": 4.0},
         {"text": "This subject has gained massive popularity recently, and we are breaking down why it matters.", "start": 4.0, "end": 8.0},
         {"text": "Let us jump into the details and look at what makes this so engaging for viewers.", "start": 8.0, "end": 12.0}
     ]
@@ -57,12 +66,12 @@ def run_workflow(query: str, max_scan_results: int, output_dir: str, skip_upload
         print(f"Video generated successfully at: {video_path}")
     except Exception as e:
         print(f"Error generating video: {e}")
-        return
+        return False
 
     # Step 4: Upload to YouTube channel
     if skip_upload:
         print("\n[Step 4] Skipping upload as requested by user (--skip-upload).")
-        return
+        return True
 
     print("\n[Step 4] Uploading video to your YouTube Channel...")
     uploader = YouTubeUploader()
@@ -70,12 +79,12 @@ def run_workflow(query: str, max_scan_results: int, output_dir: str, skip_upload
         uploader.authenticate()
 
         # Generate appropriate meta details
-        video_title = f"Trending: {top_video['title']}"
+        video_title = f"Trending: {ascii_title}"
         if len(video_title) > 90:
             video_title = video_title[:90] + "..."
 
         video_description = (
-            f"An analysis and discussion inspired by the trending video: {top_video['title']}.\n\n"
+            f"An analysis and discussion inspired by the trending video: {ascii_title}.\n\n"
             f"Original Video: {top_video['url']}\n"
             f"Automatically generated with StagStudio22 Workflow."
         )
@@ -88,9 +97,29 @@ def run_workflow(query: str, max_scan_results: int, output_dir: str, skip_upload
             privacy_status=upload_privacy
         )
         print(f"Successfully uploaded! Video ID: {video_id}")
+        return True
     except Exception as e:
         print(f"Error uploading video: {e}")
         print("Note: To upload, make sure client_secrets.json is present and configured correctly.")
+        return False
+
+def run_workflow(query: str, max_scan_results: int, output_dir: str, skip_upload: bool, upload_privacy: str, within_days: int, loop: bool, interval_hours: float):
+    print("=== Starting Automated YouTube Workflow ===")
+
+    if not loop:
+        run_workflow_once(query, max_scan_results, output_dir, skip_upload, upload_privacy, within_days)
+        print("\n=== Workflow finished (Single Run) ===")
+    else:
+        print(f"Continuous Loop Mode Enabled! System will run every {interval_hours} hours.")
+        try:
+            while True:
+                run_workflow_once(query, max_scan_results, output_dir, skip_upload, upload_privacy, within_days)
+
+                print(f"\nCycle complete. Sleeping for {interval_hours} hours before scanning again...")
+                # Sleep interval converted from hours to seconds
+                time.sleep(interval_hours * 3600)
+        except KeyboardInterrupt:
+            print("\nContinuous Loop mode terminated by user.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Automated YouTube Workflow: Scan, Generate, and Upload Videos.")
@@ -99,6 +128,9 @@ if __name__ == "__main__":
     parser.add_argument("--output-dir", type=str, default="output", help="Directory where temporary and final video/audio assets are stored.")
     parser.add_argument("--skip-upload", action="store_true", help="Set to True if you only want to scan and generate video without uploading.")
     parser.add_argument("--privacy", type=str, default="private", choices=["private", "unlisted", "public"], help="Privacy status of the uploaded video.")
+    parser.add_argument("--within-days", type=int, default=None, help="Filter scanned videos published within the last N days (e.g. 1 for last 24h, 7 for last week).")
+    parser.add_argument("--loop", action="store_true", help="Enable continuous loop mode to repeatedly run automation.")
+    parser.add_argument("--interval", type=float, default=24.0, help="Interval in hours to sleep between loop cycles (default: 24 hours).")
 
     args = parser.parse_args()
     run_workflow(
@@ -106,5 +138,8 @@ if __name__ == "__main__":
         max_scan_results=args.max_results,
         output_dir=args.output_dir,
         skip_upload=args.skip_upload,
-        upload_privacy=args.privacy
+        upload_privacy=args.privacy,
+        within_days=args.within_days,
+        loop=args.loop,
+        interval_hours=args.interval
     )
