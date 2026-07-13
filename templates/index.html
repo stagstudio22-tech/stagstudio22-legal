@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#181818]">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StagStudio22 - Prestige YT AI Command Center</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Font Integration (Söhne/Inter substitute) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+        /* Custom scrollbar for telemetry console */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #181818;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #303030;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #da291c;
+        }
+    </style>
+</head>
+<body class="h-full text-white flex flex-col justify-between selection:bg-[#da291c] selection:text-white">
+
+    <!-- TOP NAVIGATION (Ferrari style top-nav-on-dark) -->
+    <header class="border-b border-[#303030] bg-[#181818] sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand Mark & Logo -->
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-10 bg-[#da291c] flex items-center justify-center font-extrabold text-sm text-white tracking-tighter" style="clip-path: polygon(50% 0%, 100% 15%, 100% 85%, 50% 100%, 0% 85%, 0% 15%);">
+                    S22
+                </div>
+                <div>
+                    <span class="text-xs font-semibold tracking-[0.2em] text-[#969696] block uppercase">COMMAND CENTRE</span>
+                    <span class="text-sm font-bold tracking-widest text-white block uppercase">STAGSTUDIO22</span>
+                </div>
+            </div>
+
+            <!-- Horizontal Menu -->
+            <nav class="hidden md:flex space-x-8">
+                <a href="#" class="text-xs font-bold tracking-[0.15em] text-white hover:text-[#da291c] transition uppercase">Cockpit</a>
+                <a href="#" class="text-xs font-bold tracking-[0.15em] text-[#969696] hover:text-[#da291c] transition uppercase">AI Operations</a>
+                <a href="#" class="text-xs font-bold tracking-[0.15em] text-[#969696] hover:text-[#da291c] transition uppercase">Analytics</a>
+                <a href="#" class="text-xs font-bold tracking-[0.15em] text-[#969696] hover:text-[#da291c] transition uppercase">F1 Telemetry</a>
+            </nav>
+
+            <!-- Configuration indicators -->
+            <div class="flex items-center space-x-4 text-xs font-bold tracking-wider uppercase">
+                <div class="flex items-center space-x-1.5" id="indicator-api">
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-600 block" id="indicator-api-dot"></span>
+                    <span class="text-xs text-[#969696]">API KEY</span>
+                </div>
+                <div class="flex items-center space-x-1.5" id="indicator-oauth">
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-600 block" id="indicator-oauth-dot"></span>
+                    <span class="text-xs text-[#969696]">OAUTH</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- HERO EXCLUSIVITY HERO BAND -->
+        <section class="relative bg-gradient-to-r from-[#111] via-[#1c1c1c] to-[#111] border border-[#303030] p-8 md:p-12 flex flex-col md:flex-row md:items-center justify-between gap-6 overflow-hidden">
+            <!-- Ambient Rosso Corsa Line -->
+            <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#da291c]"></div>
+
+            <div class="space-y-3 max-w-2xl relative z-10">
+                <div class="inline-flex items-center bg-[#303030] text-[#da291c] text-[10px] font-bold tracking-[0.2em] uppercase px-3 py-1 rounded-none">
+                    ENGINE COMMAND DECK ACTIVE
+                </div>
+                <h1 class="text-3xl md:text-5xl font-medium tracking-tight text-white leading-none uppercase">
+                    AI Command <span class="text-[#da291c]">Center</span>
+                </h1>
+                <p class="text-sm text-[#969696] font-normal max-w-lg">
+                    Direct your custom AI models. Run background tasks, scan Youtube niches, generate high-end cinematic narration scripts, render video assets, and dispatch publications directly.
+                </p>
+            </div>
+
+            <!-- Global Run State Telemetry Badge -->
+            <div class="flex flex-col space-y-2 border border-[#303030] bg-[#181818] p-4 min-w-[200px]">
+                <span class="text-[9px] font-bold tracking-widest text-[#666666] uppercase">SYSTEM STATE</span>
+                <div class="flex items-center space-x-2">
+                    <span class="w-3.5 h-3.5 bg-green-500 block animate-pulse" id="global-status-indicator"></span>
+                    <span class="text-sm font-bold tracking-widest text-white uppercase" id="badge-status">READY</span>
+                </div>
+                <span class="text-[9px] text-[#969696] uppercase font-mono mt-1" id="badge-task-running">Current Task: Idle</span>
+            </div>
+        </section>
+
+        <!-- DASHBOARD GRID -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+            <!-- LEFT COLUMN: COMMAND CENTRE INTERFACE (5 Cols) -->
+            <div class="lg:col-span-5 space-y-8">
+
+                <!-- TASK OPERATIONS COMMAND DECK -->
+                <section class="bg-[#303030] p-6 border border-[#303030] space-y-6 relative">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#da291c]"></div>
+
+                    <div class="border-b border-[#181818] pb-4 flex flex-col space-y-2">
+                        <h2 class="text-xs font-bold tracking-[0.2em] text-[#da291c] uppercase">LAUNCH COCKPIT COMMANDS</h2>
+                        <span class="text-[10px] text-[#969696] uppercase">Select an AI command context below to configure and execute.</span>
+                    </div>
+
+                    <!-- TABS SELECTION (Ferrari Sharp Style) -->
+                    <div class="grid grid-cols-5 gap-1 text-[9px] font-bold tracking-widest uppercase">
+                        <button onclick="switchTab('tab-workflow')" id="btn-tab-workflow" class="p-2 border border-b-2 border-b-[#da291c] border-[#181818] bg-[#181818] text-white hover:text-[#da291c] transition">AUTO</button>
+                        <button onclick="switchTab('tab-scan')" id="btn-tab-scan" class="p-2 border border-[#181818] bg-[#181818] text-[#969696] hover:text-[#da291c] transition">SCAN</button>
+                        <button onclick="switchTab('tab-script')" id="btn-tab-script" class="p-2 border border-[#181818] bg-[#181818] text-[#969696] hover:text-[#da291c] transition">SCRIPT</button>
+                        <button onclick="switchTab('tab-upload')" id="btn-tab-upload" class="p-2 border border-[#181818] bg-[#181818] text-[#969696] hover:text-[#da291c] transition">UPLOAD</button>
+                        <button onclick="switchTab('tab-shopify')" id="btn-tab-shopify" class="p-2 border border-[#181818] bg-[#181818] text-[#969696] hover:text-[#da291c] transition text-[#da291c]">SHOPIFY</button>
+                    </div>
+
+                    <!-- TAB 5: SHOPIFY INTEGRATOR CONFIGS -->
+                    <div id="tab-shopify-content" class="tab-content hidden space-y-4">
+                        <h3 class="text-[11px] font-bold tracking-widest text-white uppercase border-b border-[#181818] pb-2">5. Automated Shopify Dropshipping</h3>
+                        <div class="space-y-4">
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold tracking-[0.15em] text-[#969696] uppercase block">Product Search Niche</label>
+                                <input type="text" id="shopify-niche" value="Sportswear" class="w-full bg-[#181818] border border-[#181818] px-4 py-3 text-sm text-white focus:outline-none focus:border-[#da291c] transition-all rounded-none">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-bold tracking-[0.15em] text-[#969696] uppercase block">Price Markup Multiplier</label>
+                                    <input type="number" id="shopify-markup" value="3.0" step="0.5" class="w-full bg-[#181818] border border-[#181818] px-4 py-3 text-sm text-white focus:outline-none focus:border-[#da291c] transition-all rounded-none">
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-bold tracking-[0.15em] text-[#969696] uppercase block">Target Stores</label>
+                                    <div class="relative flex items-center h-12 bg-[#181818] border border-[#181818] px-4">
+                                        <span class="text-xs font-bold text-[#da291c] uppercase" id="shopify-badge-configured">LOADING...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="launchShopifyScan()" class="w-full bg-[#da291c] hover:bg-[#b01e0a] text-white text-xs font-bold tracking-[0.25em] uppercase px-8 py-4 transition-all duration-300 rounded-none h-14 flex items-center justify-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            <span>SCAN VIRAL PRODUCTS</span>
+                        </button>
+                    </div>
+
+                    <!-- TAB 1: FULL WORKFLOW CONFIGS -->
+                    <div id="tab-workflow-content" class="tab-content space-y-4">
+                        <h3 class="text-[11px] font-bold tracking-widest text-white uppercase border-b border-[#181818] pb-2">1. Full Automation Cycle</h3>
+                        <div class="space-y-4">
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold tracking-[0.15em] text-[#969696] uppercase block">Search Niche/Query</label>
+                                <input type="text" id="workflow-query" value="Python programming" class="w-full bg-[#181818] border border-[#181818] px-4 py-3 text-sm text-white focus:outline-none focus:border-[#da291c] transition-all rounded-none">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-bold tracking-[0.15em] text-[#969696] uppercase block">Max Results</label>
+                                    <input type="number" id="workflow-max-results" value="5" class="w-full bg-[#181818] border border-[#181818] px-4 py-3 text-sm text-white focus:outline-none focus:border-[#da291c] transition-all rounded-none">
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-bold tracking-[0.15em] text-[#969696] uppercase block">Within Days</label>
+                                    <input type="number" id="workflow-days" value="7" class="w-full bg-[#181818] border border-[#181818] px-4 py-3 text-sm text-white focus:outline-none focus:border-[#da291c] transition-all rounded-none">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-bold tracking-[0.15em] text-[#969696] uppercase block">Privacy Status</label>
+                                    <select id="workflow-privacy" class="w-full bg-[#181818] border border-[#181818] px-4 py-3 text-sm text-white focus:outline-none focus:border-[#da291c] transition-all rounded-none">
+                                        <option value="private" selected>Private</option>
+                                        <option value="unlisted">Unlisted</option>
+                                        <option value="public">Public</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-bold tracking-[0.15em] text-[#969696] uppercase block">Skip Upload</label>
+                                    <div class="relative flex items-center h-12 bg-[#181818] border border-[#181818] px-4">
+                                        <input type="checkbox" id="workflow-skip-upload" checked class="w-4 h-4 checked:bg-[#da291c] accent-[#da291c]">
+                                        <span class="ml-2 text-xs font-semibold text-white uppercase">Skip</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="launchTask('Full Workflow')" class="w-full bg-[#da291c] hover:bg-[#b01e0a] text-white text-xs font-bold tracking-[0.25em] uppercase px-8 py-4 transition-all duration-300 rounded-none h-14 flex items-center justify-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            <span>EXECUTE FULL workflow</span>
+                        </button>
+                    </div>
+
+                    <!-- TAB 2: SCAN ONLY CONFIGS -->
+                    <div id="tab-scan-content" class="tab-content hidden space-y-4">
+                        <h3 class="text-[11px] font-bold tracking-widest text-white uppercase border-b border-[#181818] pb-2">2. Search Niche Scanner</h3>
+                        <div class="space-y-4">
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold tracking-[0.15em] text-[#969696] uppercase block">Niche/Query</label>
+                                <input type="text" id="scan-query" value="Supercar reviews" class="w-full bg-[#181818] border border-[#181818] px-4 py-3 text-sm text-white focus:outline-none focus:border-[#da291c] transition-all rounded-none">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-bold tracking-[0.15em] text-[#969696] uppercase block">Max Search count</label>
+                                    <input type="number" id="scan-max-results" value="10" class="w-full bg-[#181818] border border-[#181818] px-4 py-3 text-sm text-white focus:outline-none focus:border-[#da291c] transition-all rounded-none">
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-bold tracking-[0.15em] text-[#969696] uppercase block">Within Days</label>
+                                    <input type="number" id="scan-days" value="14" class="w-full bg-[#181818] border border-[#181818] px-4 py-3 text-sm text-white focus:outline-none focus:border-[#da291c] transition-all rounded-none">
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="launchTask('Scan Only')" class="w-full bg-[#da291c] hover:bg-[#b01e0a] text-white text-xs font-bold tracking-[0.25em] uppercase px-8 py-4 transition-all duration-300 rounded-none h-14 flex items-center justify-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            <span>LAUNCH SCANNER RUN</span>
+                        </button>
+                    </div>
+
+                    <!-- TAB 3: CUSTOM SCRIPT GENERATOR -->
+                    <div id="tab-script-content" class="tab-content hidden space-y-4">
+                        <h3 class="text-[11px] font-bold tracking-widest text-white uppercase border-b border-[#181818] pb-2">3. Cinematic Video generator</h3>
+                        <div class="space-y-4">
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold tracking-[0.15em] text-[#969696] uppercase block">Custom Script Text</label>
+                                <textarea id="script-text" rows="5" class="w-full bg-[#181818] border border-[#181818] px-4 py-3 text-sm text-white focus:outline-none focus:border-[#da291c] transition-all rounded-none font-sans" placeholder="Write custom AI prompt or script here..."></textarea>
+                            </div>
+                        </div>
+                        <button onclick="launchTask('Generate Video')" class="w-full bg-[#da291c] hover:bg-[#b01e0a] text-white text-xs font-bold tracking-[0.25em] uppercase px-8 py-4 transition-all duration-300 rounded-none h-14 flex items-center justify-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            <span>COMPILE VIDEO ASSETS</span>
+                        </button>
+                    </div>
+
+                    <!-- TAB 4: MANUAL UPLOADER -->
+                    <div id="tab-upload-content" class="tab-content hidden space-y-4">
+                        <h3 class="text-[11px] font-bold tracking-widest text-white uppercase border-b border-[#181818] pb-2">4. Direct Manual Uploader</h3>
+                        <div class="space-y-4">
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold tracking-[0.15em] text-[#969696] uppercase block">Local Video File Path</label>
+                                <input type="text" id="upload-filepath" value="output/workflow_video.mp4" class="w-full bg-[#181818] border border-[#181818] px-4 py-3 text-sm text-white focus:outline-none focus:border-[#da291c] transition-all rounded-none">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold tracking-[0.15em] text-[#969696] uppercase block">Video Title</label>
+                                <input type="text" id="upload-title" value="Prestige Automated Release" class="w-full bg-[#181818] border border-[#181818] px-4 py-3 text-sm text-white focus:outline-none focus:border-[#da291c] transition-all rounded-none">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold tracking-[0.15em] text-[#969696] uppercase block">Description</label>
+                                <textarea id="upload-desc" rows="3" class="w-full bg-[#181818] border border-[#181818] px-4 py-3 text-sm text-white focus:outline-none focus:border-[#da291c] transition-all rounded-none font-sans">Uploaded using the StagStudio22 Command Center.</textarea>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-bold tracking-[0.15em] text-[#969696] uppercase block">Tags (comma-separated)</label>
+                                    <input type="text" id="upload-tags" value="trending, automation" class="w-full bg-[#181818] border border-[#181818] px-4 py-3 text-sm text-white focus:outline-none focus:border-[#da291c] transition-all rounded-none">
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-bold tracking-[0.15em] text-[#969696] uppercase block">Privacy</label>
+                                    <select id="upload-privacy" class="w-full bg-[#181818] border border-[#181818] px-4 py-3 text-sm text-white focus:outline-none focus:border-[#da291c] transition-all rounded-none">
+                                        <option value="private" selected>Private</option>
+                                        <option value="unlisted">Unlisted</option>
+                                        <option value="public">Public</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="launchTask('Upload Video')" class="w-full bg-[#da291c] hover:bg-[#b01e0a] text-white text-xs font-bold tracking-[0.25em] uppercase px-8 py-4 transition-all duration-300 rounded-none h-14 flex items-center justify-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            <span>DISPATCH PUBLICATION</span>
+                        </button>
+                    </div>
+
+                </section>
+
+                <!-- PREVIEW GENERATED ASSETS -->
+                <section class="bg-[#303030] p-6 border border-[#303030] space-y-6 relative">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#da291c]"></div>
+                    <div class="border-b border-[#181818] pb-4">
+                        <h2 class="text-xs font-bold tracking-[0.2em] text-white uppercase">GENERATED MEDIA PREVIEWS</h2>
+                    </div>
+
+                    <div id="media-preview-container" class="space-y-6">
+                        <!-- Video Preview -->
+                        <div class="space-y-2">
+                            <h3 class="text-[10px] font-bold tracking-[0.15em] text-[#969696] uppercase">Latest Generated Video</h3>
+                            <div class="bg-[#181818] p-2 border border-[#303030] aspect-video flex items-center justify-center relative overflow-hidden" id="video-preview-box">
+                                <span class="text-xs text-[#969696] uppercase" id="video-placeholder">No Video Generated Yet</span>
+                                <video id="video-player" controls class="w-full h-full hidden rounded-none object-cover"></video>
+                            </div>
+                        </div>
+
+                        <!-- Audio Preview -->
+                        <div class="space-y-2">
+                            <h3 class="text-[10px] font-bold tracking-[0.15em] text-[#969696] uppercase">Latest Narration Audio</h3>
+                            <div class="bg-[#181818] p-4 border border-[#303030] flex flex-col justify-center space-y-3" id="audio-preview-box">
+                                <span class="text-xs text-[#969696] uppercase block text-center" id="audio-placeholder">No Audio Generated Yet</span>
+                                <audio id="audio-player" controls class="w-full hidden bg-transparent rounded-none"></audio>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- RIGHT COLUMN: TELEMETRY & RESULTS (7 Cols) -->
+            <div class="lg:col-span-7 space-y-8">
+
+                <!-- REAL-TIME CONSOLE TELEMETRY -->
+                <section class="bg-[#181818] border border-[#303030] flex flex-col h-[400px] relative">
+                    <div class="flex items-center justify-between border-b border-[#303030] bg-[#303030] px-4 py-3">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2.5 h-2.5 bg-[#da291c] block animate-pulse"></span>
+                            <h2 class="text-xs font-bold tracking-[0.15em] text-white uppercase">LIVE ENGINE TELEMETRY</h2>
+                        </div>
+                        <button onclick="clearLogs()" class="text-[10px] font-bold tracking-[0.1em] text-[#969696] hover:text-[#da291c] uppercase transition">CLEAR CONSOLE</button>
+                    </div>
+                    <!-- Terminal Console area -->
+                    <pre id="console-logs" class="flex-grow overflow-y-auto p-4 font-mono text-xs text-green-400 bg-black leading-relaxed select-text"></pre>
+                </section>
+
+                <!-- DYNAMIC RESULTS DISPLAY (TOGGLED BETWEEN YOUTUBE AND SHOPIFY) -->
+                <section id="results-panel-youtube" class="bg-[#303030] p-6 border border-[#303030] space-y-6 relative">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#da291c]"></div>
+                    <div class="border-b border-[#181818] pb-4 flex justify-between items-center">
+                        <h2 class="text-xs font-bold tracking-[0.2em] text-white uppercase">SCANNED TRENDING VIDEOS</h2>
+                        <span id="scanned-count-badge" class="bg-[#181818] text-xs font-bold tracking-[0.1em] text-[#da291c] uppercase px-3 py-1">0 FOUND</span>
+                    </div>
+
+                    <!-- Grid of videos -->
+                    <div id="scanned-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[420px] overflow-y-auto pr-1">
+                        <!-- Placeholder -->
+                        <div id="scanned-placeholder" class="col-span-full py-12 text-center border border-dashed border-[#181818]">
+                            <span class="text-xs text-[#969696] uppercase tracking-wider block">No scan results loaded yet. Launch the engine to scan YouTube.</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="results-panel-shopify" class="bg-[#303030] p-6 border border-[#303030] space-y-6 relative hidden">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#da291c]"></div>
+                    <div class="border-b border-[#181818] pb-4 flex justify-between items-center">
+                        <div class="flex flex-col">
+                            <h2 class="text-xs font-bold tracking-[0.2em] text-white uppercase">VIRAL SPORTSWEAR CATALOG</h2>
+                            <span class="text-[9px] text-[#969696] uppercase">Nike, Adidas & North Face Inspired Layouts</span>
+                        </div>
+                        <span id="shopify-count-badge" class="bg-[#181818] text-xs font-bold tracking-[0.1em] text-[#da291c] uppercase px-3 py-1">0 FOUND</span>
+                    </div>
+
+                    <!-- Grid of Shopify trending products -->
+                    <div id="shopify-scanned-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[420px] overflow-y-auto pr-1">
+                        <!-- Placeholder -->
+                        <div id="shopify-placeholder" class="col-span-full py-12 text-center border border-dashed border-[#181818]">
+                            <span class="text-xs text-[#969696] uppercase tracking-wider block">No products loaded yet. Scan for viral trends to populate.</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-[#303030] bg-[#181818] py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs tracking-widest text-[#969696] uppercase">
+            <span>&copy; 2026 STAGSTUDIO22 AUTOMATION</span>
+            <div class="flex space-x-6">
+                <a href="/privacy-policy" class="hover:text-white transition">Privacy Protocol</a>
+                <a href="#" class="hover:text-white transition">Terms of Use</a>
+                <span class="text-[#da291c]">Rosso Corsa Edition</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT DASHBOARD LOGIC -->
+    <script>
+        const badgeStatus = document.getElementById('badge-status');
+        const globalStatusIndicator = document.getElementById('global-status-indicator');
+        const badgeTaskRunning = document.getElementById('badge-task-running');
+        const consoleLogs = document.getElementById('console-logs');
+        const scannedGrid = document.getElementById('scanned-grid');
+        const scannedPlaceholder = document.getElementById('scanned-placeholder');
+        const scannedCountBadge = document.getElementById('scanned-count-badge');
+
+        const videoPlayer = document.getElementById('video-player');
+        const videoPlaceholder = document.getElementById('video-placeholder');
+        const audioPlayer = document.getElementById('audio-player');
+        const audioPlaceholder = document.getElementById('audio-placeholder');
+
+        const indicatorApiDot = document.getElementById('indicator-api-dot');
+        const indicatorOauthDot = document.getElementById('indicator-oauth-dot');
+
+        let isRunningState = false;
+        let activeTab = 'tab-workflow';
+
+        // Custom script generator prefill text to inspire
+        document.getElementById('script-text').value =
+            "Today we are exploring a highly trending topic on YouTube: automated digital content creation. " +
+            "This subject has gained massive popularity recently, and we are breaking down why it matters. " +
+            "Let us jump into the details and look at what makes this so engaging for viewers.";
+
+        // Cache for loaded Shopify products
+        let shopifyProductsCache = [];
+
+        // Handle tab switching
+        function switchTab(tabId) {
+            activeTab = tabId;
+            // Hide all tab content
+            document.querySelectorAll('.tab-content').forEach(element => {
+                element.classList.add('hidden');
+            });
+            // Display active tab content
+            document.getElementById(tabId + '-content').classList.remove('hidden');
+
+            // Reset tab button stylings
+            ['tab-workflow', 'tab-scan', 'tab-script', 'tab-upload', 'tab-shopify'].forEach(tid => {
+                const btn = document.getElementById('btn-' + tid);
+                if (btn) {
+                    btn.className = 'p-2 border border-[#181818] bg-[#181818] text-[#969696] hover:text-[#da291c] transition';
+                }
+            });
+
+            // Set active tab button style
+            const activeBtn = document.getElementById('btn-' + tabId);
+            if (activeBtn) {
+                activeBtn.className = 'p-2 border border-b-2 border-b-[#da291c] border-[#181818] bg-[#181818] text-white hover:text-[#da291c] transition';
+            }
+
+            // Toggle active results panel
+            if (tabId === 'tab-shopify') {
+                document.getElementById('results-panel-youtube').classList.add('hidden');
+                document.getElementById('results-panel-shopify').classList.remove('hidden');
+                fetchShopifyScannedProducts();
+            } else {
+                document.getElementById('results-panel-youtube').classList.remove('hidden');
+                document.getElementById('results-panel-shopify').classList.add('hidden');
+            }
+        }
+
+        // Initialize Real-time event log streaming
+        function initLogStream() {
+            const eventSource = new EventSource('/api/logs/stream');
+            eventSource.onmessage = function(event) {
+                if (event.data) {
+                    try {
+                        const data = JSON.parse(event.data);
+                        if (data.log) {
+                            consoleLogs.textContent += data.log;
+                            consoleLogs.scrollTop = consoleLogs.scrollHeight;
+                        }
+                    } catch (e) {
+                        // ignore malformed JSON
+                    }
+                }
+            };
+            eventSource.onerror = function() {
+                setTimeout(initLogStream, 3000);
+            };
+        }
+
+        // Fetch Server configurations & run stats
+        async function fetchStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const status = await response.json();
+
+                isRunningState = status.is_running;
+
+                // Configure badges & button states
+                if (status.is_running) {
+                    badgeStatus.textContent = 'RUNNING';
+                    badgeStatus.className = 'text-sm font-bold tracking-widest text-[#da291c] uppercase';
+                    globalStatusIndicator.className = 'w-3.5 h-3.5 bg-[#da291c] block animate-pulse';
+                    badgeTaskRunning.textContent = 'Current Task: ' + status.current_task;
+                } else {
+                    badgeStatus.textContent = 'READY';
+                    badgeStatus.className = 'text-sm font-bold tracking-widest text-green-500 uppercase';
+                    globalStatusIndicator.className = 'w-3.5 h-3.5 bg-green-500 block';
+                    badgeTaskRunning.textContent = status.last_run_status ? 'Status: ' + status.last_run_status : 'Current Task: Idle';
+                }
+
+                // API/OAuth indicator lights
+                if (status.api_key_configured) {
+                    indicatorApiDot.className = 'w-2.5 h-2.5 rounded-full bg-green-500 block';
+                } else {
+                    indicatorApiDot.className = 'w-2.5 h-2.5 rounded-full bg-red-600 block';
+                }
+
+                if (status.client_secrets_configured) {
+                    indicatorOauthDot.className = 'w-2.5 h-2.5 rounded-full bg-green-500 block';
+                } else {
+                    indicatorOauthDot.className = 'w-2.5 h-2.5 rounded-full bg-red-600 block';
+                }
+
+                // Media Preview Loading
+                if (status.has_video) {
+                    if (videoPlayer.src === '' || videoPlayer.src.indexOf('/media/video') === -1) {
+                        videoPlayer.src = '/media/video?' + new Date().getTime();
+                    }
+                    videoPlayer.classList.remove('hidden');
+                    videoPlaceholder.classList.add('hidden');
+                } else if (!status.is_running) {
+                    videoPlayer.classList.add('hidden');
+                    videoPlaceholder.classList.remove('hidden');
+                    videoPlayer.src = '';
+                }
+
+                if (status.has_audio) {
+                    if (audioPlayer.src === '' || audioPlayer.src.indexOf('/media/audio') === -1) {
+                        audioPlayer.src = '/media/audio?' + new Date().getTime();
+                    }
+                    audioPlayer.classList.remove('hidden');
+                    audioPlaceholder.classList.add('hidden');
+                } else if (!status.is_running) {
+                    audioPlayer.classList.add('hidden');
+                    audioPlaceholder.classList.remove('hidden');
+                    audioPlayer.src = '';
+                }
+
+                scannedCountBadge.textContent = `${status.scanned_videos_count} FOUND`;
+            } catch (err) {
+                console.error("Error fetching status:", err);
+            }
+        }
+
+        // Fetch scanned video items
+        async function fetchScannedVideos() {
+            try {
+                const response = await fetch('/api/scanned-videos');
+                const videos = await response.json();
+
+                if (videos.length > 0) {
+                    scannedPlaceholder.classList.add('hidden');
+                    scannedGrid.innerHTML = videos.map(video => `
+                        <div class="bg-[#181818] border border-[#303030] p-4 flex flex-col justify-between hover:border-[#da291c] transition duration-300 relative rounded-none h-[180px]">
+                            <div class="absolute left-0 top-0 bottom-0 w-[3px] bg-[#da291c]"></div>
+
+                            <div class="space-y-1.5 pl-2">
+                                <span class="text-[9px] font-bold tracking-[0.15em] text-[#da291c] uppercase block">${video.channel_title || 'N/A'}</span>
+                                <h4 class="text-xs font-bold text-white line-clamp-2 uppercase tracking-wide leading-snug">${video.title}</h4>
+                            </div>
+
+                            <div class="border-t border-[#303030] pt-2 mt-2 flex justify-between items-center text-[10px] tracking-wider text-[#969696] uppercase pl-2">
+                                <div class="flex flex-col">
+                                    <span class="text-[8px] text-[#666666]">VIEWS</span>
+                                    <span class="font-bold text-white">${video.view_count.toLocaleString()}</span>
+                                </div>
+                                <a href="${video.url}" target="_blank" class="text-[#da291c] font-bold hover:underline tracking-widest text-[9px]">VIEW SOURCE &rarr;</a>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    scannedPlaceholder.classList.remove('hidden');
+                    scannedGrid.innerHTML = `
+                        <div id="scanned-placeholder" class="col-span-full py-12 text-center border border-dashed border-[#181818]">
+                            <span class="text-xs text-[#969696] uppercase tracking-wider block">No scan results loaded yet. Launch the engine to scan YouTube.</span>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                console.error("Error fetching scanned videos:", err);
+            }
+        }
+
+        // Start specific background task
+        async function launchTask(taskType) {
+            if (isRunningState) {
+                alert('Engine is currently running a background operation. Please wait.');
+                return;
+            }
+
+            let bodyParams = { task: taskType };
+
+            if (taskType === 'Full Workflow') {
+                bodyParams.query = document.getElementById('workflow-query').value;
+                bodyParams.max_results = document.getElementById('workflow-max-results').value;
+                bodyParams.within_days = document.getElementById('workflow-days').value;
+                bodyParams.privacy = document.getElementById('workflow-privacy').value;
+                bodyParams.skip_upload = document.getElementById('workflow-skip-upload').checked;
+            } else if (taskType === 'Scan Only') {
+                bodyParams.query = document.getElementById('scan-query').value;
+                bodyParams.max_results = document.getElementById('scan-max-results').value;
+                bodyParams.within_days = document.getElementById('scan-days').value;
+            } else if (taskType === 'Generate Video') {
+                bodyParams.script_text = document.getElementById('script-text').value;
+            } else if (taskType === 'Upload Video') {
+                bodyParams.file_path = document.getElementById('upload-filepath').value;
+                bodyParams.title = document.getElementById('upload-title').value;
+                bodyParams.description = document.getElementById('upload-desc').value;
+                bodyParams.tags = document.getElementById('upload-tags').value;
+                bodyParams.privacy = document.getElementById('upload-privacy').value;
+            }
+
+            try {
+                const response = await fetch('/api/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(bodyParams)
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    fetchStatus();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (err) {
+                alert('Connection failure, unable to start task.');
+            }
+        }
+
+        // Helper to clear log telemetry
+        function clearLogs() {
+            consoleLogs.textContent = '';
+        }
+
+        // Shopify programmatic functions
+        async function fetchShopifyStatus() {
+            try {
+                const response = await fetch('/api/shopify/status');
+                const status = await response.json();
+                const badge = document.getElementById('shopify-badge-configured');
+                if (status.configured) {
+                    badge.textContent = status.shop_name.toUpperCase();
+                    badge.className = 'text-xs font-bold text-green-500 uppercase';
+                } else {
+                    badge.textContent = 'MOCK DEV MODE';
+                    badge.className = 'text-xs font-bold text-[#da291c] uppercase';
+                }
+            } catch (err) {
+                console.error("Error fetching shopify status:", err);
+            }
+        }
+
+        async function launchShopifyScan() {
+            const query = document.getElementById('shopify-niche').value;
+            const markup = parseFloat(document.getElementById('shopify-markup').value);
+
+            consoleLogs.textContent += `\n[*] Shopify Cockpit launched trending search scan for query: '${query}' with pricing markup x${markup}...\n`;
+            consoleLogs.scrollTop = consoleLogs.scrollHeight;
+
+            try {
+                const response = await fetch('/api/shopify/scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: query, max_results: 10 })
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    consoleLogs.textContent += `[+] Scan completed. Found ${result.products.length} trending items matching sportswear themes!\n`;
+                    consoleLogs.scrollTop = consoleLogs.scrollHeight;
+                    fetchShopifyScannedProducts();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (err) {
+                console.error("Shopify scan connection failed:", err);
+            }
+        }
+
+        async function fetchShopifyScannedProducts() {
+            try {
+                const response = await fetch('/api/shopify/scanned-products');
+                const products = await response.json();
+                shopifyProductsCache = products;
+
+                const grid = document.getElementById('shopify-scanned-grid');
+                const placeholder = document.getElementById('shopify-placeholder');
+                const badge = document.getElementById('shopify-count-badge');
+
+                badge.textContent = `${products.length} FOUND`;
+
+                if (products.length > 0) {
+                    placeholder.classList.add('hidden');
+                    grid.innerHTML = products.map(p => `
+                        <div class="bg-[#181818] border border-[#303030] p-4 flex flex-col justify-between hover:border-[#da291c] transition duration-300 relative rounded-none h-[220px]">
+                            <div class="absolute left-0 top-0 bottom-0 w-[3px] bg-[#da291c]"></div>
+
+                            <div class="flex gap-3">
+                                <img src="${p.images[0]}" class="w-16 h-16 object-cover border border-[#303030] rounded-none flex-shrink-0" alt="product" />
+                                <div class="space-y-1">
+                                    <span class="text-[9px] font-bold tracking-[0.15em] text-[#da291c] uppercase block">${p.category} | SUPPLIER: ${p.supplier}</span>
+                                    <h4 class="text-xs font-bold text-white line-clamp-2 uppercase tracking-wide leading-snug">${p.title}</h4>
+                                    <p class="text-[10px] text-[#969696] line-clamp-2 leading-normal">${p.description}</p>
+                                </div>
+                            </div>
+
+                            <div class="border-t border-[#303030] pt-2 mt-2 flex justify-between items-center text-[10px] tracking-wider pl-1">
+                                <div class="flex gap-4">
+                                    <div class="flex flex-col">
+                                        <span class="text-[8px] text-[#666666]">SOURCING COST</span>
+                                        <span class="font-mono text-white">$${p.cost_price.toFixed(2)}</span>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-[8px] text-[#666666]">RETAIL MARKUP</span>
+                                        <span class="font-mono text-green-400 font-bold">$${p.retail_price.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                                <button onclick="importProductToShopify('${p.id}')" id="btn-import-${p.id}" class="bg-[#da291c] hover:bg-[#b01e0a] text-white font-bold text-[9px] px-3 py-1.5 transition uppercase tracking-widest rounded-none">
+                                    IMPORT TO STORE
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    placeholder.classList.remove('hidden');
+                    grid.innerHTML = `
+                        <div id="shopify-placeholder" class="col-span-full py-12 text-center border border-dashed border-[#181818]">
+                            <span class="text-xs text-[#969696] uppercase tracking-wider block">No products loaded yet. Scan for viral trends to populate.</span>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                console.error("Error fetching shopify scanned products:", err);
+            }
+        }
+
+        async function importProductToShopify(productId) {
+            const product = shopifyProductsCache.find(p => p.id === productId);
+            if (!product) return;
+
+            const btn = document.getElementById(`btn-import-${productId}`);
+            btn.disabled = true;
+            btn.textContent = 'IMPORTING...';
+            btn.className = 'bg-[#303030] text-[#969696] font-bold text-[9px] px-3 py-1.5 cursor-not-allowed rounded-none';
+
+            consoleLogs.textContent += `\n[*] Programmatically importing '${product.title}' into Nike/Adidas-inspired digital storefront...\n`;
+            consoleLogs.scrollTop = consoleLogs.scrollHeight;
+
+            try {
+                const response = await fetch('/api/shopify/import', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(product)
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    consoleLogs.textContent += `[+] [IMPORT SUCCESS] Dynamic dropship product successfully imported into storefront! ID: ${result.imported_product.id}\n`;
+                    consoleLogs.scrollTop = consoleLogs.scrollHeight;
+                    btn.textContent = 'IMPORTED';
+                    btn.className = 'bg-green-600 text-white font-bold text-[9px] px-3 py-1.5 rounded-none';
+                } else {
+                    btn.disabled = false;
+                    btn.textContent = 'IMPORT TO STORE';
+                    btn.className = 'bg-[#da291c] hover:bg-[#b01e0a] text-white font-bold text-[9px] px-3 py-1.5 transition uppercase tracking-widest rounded-none';
+                    alert('Shopify Import failed: ' + result.message);
+                }
+            } catch (err) {
+                btn.disabled = false;
+                btn.textContent = 'IMPORT TO STORE';
+                btn.className = 'bg-[#da291c] hover:bg-[#b01e0a] text-white font-bold text-[9px] px-3 py-1.5 transition uppercase tracking-widest rounded-none';
+                console.error("Shopify import connection failed:", err);
+            }
+        }
+
+        // Initialize timers & streaming listeners
+        initLogStream();
+        fetchStatus();
+        fetchScannedVideos();
+        fetchShopifyStatus();
+        fetchShopifyScannedProducts();
+
+        // High frequency status updates (every 2s) to capture execution phases
+        setInterval(fetchStatus, 2000);
+        // Scanned videos updates (every 5s) to load elements dynamically as they come in
+        setInterval(fetchScannedVideos, 5000);
+        // Shopify indicators (every 10s)
+        setInterval(fetchShopifyStatus, 10000);
+    </script>
+</body>
+</html>
